@@ -165,11 +165,15 @@ footer a{color:#294994}
 <div class="settings" aria-label="ตั้งค่าเกม">
   <label>
     ความเร็วเสียง
-    <select id="rate">
-      <option value="0.45">ช้ามาก</option>
-      <option value="0.55" selected>ช้า</option>
-      <option value="0.7">ปานกลาง</option>
-    </select>
+    <s<select id="rate">
+
+  <option value="0.75">ช้า ฟังง่าย</option>
+
+  <option value="0.85" selected>นุ่มนวล แนะนำ</option>
+
+  <option value="0.95">ใกล้เสียงพูดปกติ</option>
+
+</select>
   </label>
   <label><input id="autoRead" type="checkbox">อ่านข้อใหม่อัตโนมัติ</label>
   <label><input id="sound" type="checkbox" checked>เสียงเอฟเฟกต์</label>
@@ -713,13 +717,122 @@ function stopVoice(){
   $("voiceStatus").textContent="";
 }
 
-function speakParts(parts){
+// รอรายการเสียงจากอุปกรณ์ เพราะบางเครื่องโหลดช้ากว่าหน้าเว็บ
+function getAvailableVoices(){
+  return new Promise(resolve=>{
+    const synth=window.speechSynthesis;
+    const voices=synth.getVoices();
+
+    if(voices.length){
+      resolve(voices);
+      return;
+    }
+
+    let finished=false;
+
+    function finish(){
+      if(finished) return;
+      finished=true;
+      clearTimeout(timer);
+      synth.removeEventListener("voiceschanged",finish);
+      resolve(synth.getVoices());
+    }
+
+    const timer=setTimeout(finish,1200);
+    synth.addEventListener("voiceschanged",finish);
+  });
+}
+
+async function speakParts(parts){
   stopVoice();
+
   if(!("speechSynthesis" in window)){
     $("voiceStatus").textContent=
-      "เครื่องนี้ไม่รองรับเสียงอ่าน ให้ผู้ใหญ่ช่วยอ่านได้";
+      "เครื่องนี้ยังอ่านเสียงไม่ได้ ชวนผู้ใหญ่มาช่วยอ่านนะ";
     return;
   }
+
+  const session=voiceSession;
+  const voices=await getAvailableVoices();
+
+  if(session!==voiceSession) return;
+
+  const thaiVoices=voices.filter(voice=>
+    /^th([-_]|$)/i.test(voice.lang)
+  );
+
+  if(!thaiVoices.length){
+    $("voiceStatus").textContent=
+      "ยังไม่พบเสียงภาษาไทย กรุณาเพิ่มเสียงไทยในการตั้งค่าของอุปกรณ์";
+    return;
+  }
+
+  // ใช้เสียงไทยเริ่มต้นของเครื่อง ถ้ามี
+  const thaiVoice=
+    thaiVoices.find(voice=>voice.default)||thaiVoices[0];
+
+  const sentences=parts
+    .map(text=>String(text).trim())
+    .filter(Boolean);
+
+  let index=0;
+
+  function readNext(){
+    if(session!==voiceSession) return;
+
+    if(index>=sentences.length){
+      currentUtterance=null;
+      $("voiceStatus").textContent="";
+      return;
+    }
+
+    const text=sentences[index];
+    const message=new SpeechSynthesisUtterance(text);
+
+    currentUtterance=message;
+    message.voice=thaiVoice;
+    message.lang="th-TH";
+    message.rate=Number($("rate").value);
+
+    // ใช้ระดับเสียงใกล้ธรรมชาติ ไม่เร่งให้แหลม
+    message.pitch=1;
+    message.volume=0.9;
+
+    $("voiceStatus").textContent="กำลังอ่าน: "+text;
+
+    message.onend=()=>{
+      if(session!==voiceSession) return;
+
+      index++;
+
+      // พักหลังตัวเลือกให้นานขึ้น เพื่อให้เด็กดูภาพตาม
+      const pause=text.startsWith("ตัวเลือกที่")
+        ? 350
+        : text.endsWith("?")
+          ? 850
+          : 700;
+
+      voiceTimer=setTimeout(readNext,pause);
+    };
+
+    message.onerror=event=>{
+      if(session!==voiceSession) return;
+
+      if(
+        event.error==="canceled"||
+        event.error==="interrupted"
+      ) return;
+
+      currentUtterance=null;
+      $("voiceStatus").textContent=
+        "อ่านเสียงไม่ได้ ลองกดอ่านอีกครั้ง หรือตรวจสอบเสียงไทยของอุปกรณ์";
+    };
+
+    speechSynthesis.speak(message);
+  }
+
+  readNext();
+}
 
   const session=voiceSession;
   let index=0;
@@ -769,15 +882,24 @@ function speakParts(parts){
 
 function readQuestion(){
   const numbers=["หนึ่ง","สอง","สาม","สี่"];
+
   const parts=[
-    `คำถามข้อที่ ${position+1}`,
+    `มาดูข้อที่ ${position+1} กันนะ`,
     deck[position].text,
-    "เลือกคำตอบที่ถูกต้องหนึ่งข้อ"
+    "ลองดูภาพ แล้วฟังตัวเลือกกันนะ"
   ];
+
   shownOptions.forEach((option,index)=>{
-    parts.push(`ตัวเลือกที่ ${numbers[index]}`);
-    parts.push(option.label);
+    // อ่านหมายเลขกับคำตอบเป็นประโยคเดียวกัน
+    parts.push(
+      `ตัวเลือกที่ ${numbers[index]} ${option.label}`
+    );
   });
+
+  parts.push(
+    "คิดได้แล้ว กดคำตอบที่หนูเลือกได้เลยนะ"
+  );
+
   speakParts(parts);
 }
 
