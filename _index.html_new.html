@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#385bdd">
+<title>น้องคอมผจญภัย — เรียนรู้คอมพิวเตอร์</title>
+<style>
+:root{
+  --blue:#385bdd;--ink:#24304b;--green:#168548;
+  --orange:#ac5c00;--line:#dbe4ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:16px;
+  font-family:system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(145deg,#e9f5ff,#f7edff);
+  min-height:100vh;
+}
+main{max-width:900px;margin:auto}
+header{text-align:center;padding:8px}
+h1{font-size:clamp(28px,5vw,42px);margin:8px 0}
+h2{line-height:1.5}
+p{line-height:1.7}
+button,select,input{font:inherit}
+button{
+  border:0;border-radius:18px;padding:14px 20px;
+  min-height:54px;background:var(--blue);color:white;
+  font-weight:750;cursor:pointer;
+  box-shadow:0 5px 0 #2642a9;
+}
+button:hover:not(:disabled){filter:brightness(1.06)}
+button:active:not(:disabled){transform:translateY(3px);box-shadow:none}
+button:disabled{cursor:default;opacity:.8}
+button:focus-visible,a:focus-visible,select:focus-visible,
+input:focus-visible{outline:4px solid #f6b623;outline-offset:4px}
+.secondary{
+  background:#eaf0ff;color:#294994;box-shadow:0 4px 0 #d0dcf6;
+}
+.panel{
+  margin:16px 0;padding:24px;background:white;
+  border:3px solid var(--line);border-radius:28px;
+  box-shadow:0 9px 0 #d9e3f5;
+}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.center{text-align:center}
+.settings{
+  display:flex;gap:16px;align-items:center;justify-content:center;
+  flex-wrap:wrap;margin:20px 0;
+  background:#f4f7ff;padding:16px;border-radius:18px;
+}
+.settings label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+select{padding:8px;border:2px solid var(--line);border-radius:10px}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--blue)}
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  min-height:220px;display:flex;align-items:center;justify-content:center;
+  gap:12px;background:#fff7da;border:3px solid #f6e5aa;
+  border-radius:24px;margin:18px 0;
+}
+.hero:before,.hero:after{
+  content:"";position:absolute;z-index:-1;border-radius:50%;
+  width:150px;height:150px;background:#ffeaa2;
+}
+.hero:before{left:-35px;top:-45px}
+.hero:after{right:-35px;bottom:-50px;background:#d7edff}
+.artwrap{display:inline-flex;align-items:center;justify-content:center}
+.art{width:170px;height:170px;object-fit:contain}
+.fallback{font-size:110px;line-height:1.2}
+.hero .side .art{width:80px;height:80px}
+.hero .side .fallback{font-size:60px}
+.topline{
+  display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;
+  font-size:18px;
+}
+progress{
+  display:block;width:100%;height:18px;accent-color:var(--blue);
+  margin-top:14px;
+}
+#question{
+  text-align:center;font-size:clamp(24px,4vw,32px);
+  margin:20px 0;
+}
+.answers{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;margin-top:20px;
+}
+.choice{
+  position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;
+  min-height:225px;padding:48px 16px 18px;
+  background:white;color:var(--ink);
+  border:3px solid var(--line);box-shadow:0 5px 0 #e1e8f8;
+  font-size:clamp(19px,3vw,23px);line-height:1.5;text-align:center;
+}
+.choice .art{width:115px;height:115px}
+.choice .fallback{font-size:85px}
+.number{
+  position:absolute;top:10px;left:10px;
+  width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;background:var(--blue);
+  color:white;font-size:22px;
+}
+.choice.correct{background:#e2fae9;border-color:#36a769}
+.choice.wrong{background:#fff1df;border-color:#e5a147}
+.feedback{
+  border-radius:20px;padding:18px;margin-top:20px;
+  font-size:20px;line-height:1.75;
+}
+.feedback.good{background:#e2fae9;border:2px solid #36a769}
+.feedback.try{background:#fff4e5;border:2px solid #e5a147}
+.feedback h3{margin:0 0 8px;font-size:23px}
+.feedback p{margin:8px 0}
+#next{margin-top:18px}
+.note{font-size:15px;color:#596579}
+footer{
+  text-align:center;font-size:13px;color:#596579;
+  line-height:1.8;margin:26px 0;
+}
+footer a{color:#294994}
+#confetti{
+  position:fixed;inset:0;pointer-events:none;overflow:hidden;
+  z-index:20;
+}
+.particle{
+  position:absolute;font-size:25px;
+  animation:fall 1.4s ease-out forwards;
+}
+@keyframes fall{
+  from{transform:translateY(-40px) rotate(0);opacity:1}
+  to{transform:translateY(65vh) rotate(220deg);opacity:0}
+}
+@keyframes bounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+}
+.bounce{animation:bounce .55s ease}
+[hidden]{display:none!important}
+@media(max-width:550px){
+  body{padding:10px}
+  .panel{padding:16px}
+  .answers{grid-template-columns:1fr}
+  .choice{
+    flex-direction:row;text-align:left;justify-content:flex-start;
+    min-height:155px;padding:44px 14px 16px;
+  }
+  .choice .art{width:92px;height:92px}
+  .choice .artwrap{flex-shrink:0}
+  .hero .art{width:140px;height:140px}
+  .hero .side .art{width:60px;height:60px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>น้องคอมผจญภัย</h1>
+  <p>ดูภาพ ฟังคำถาม แล้วเรียนรู้ไปด้วยกัน</p>
+</header>
+
+<div class="settings" aria-label="ตั้งค่าเกม">
+  <label>
+    ความเร็วเสียง
+    <select id="rate">
+      <option value="0.45">ช้ามาก</option>
+      <option value="0.55" selected>ช้า</option>
+      <option value="0.7">ปานกลาง</option>
+    </select>
+  </label>
+  <label><input id="autoRead" type="checkbox">อ่านข้อใหม่อัตโนมัติ</label>
+  <label><input id="sound" type="checkbox" checked>เสียงเอฟเฟกต์</label>
+</div>
+
+<section id="home" class="panel">
+  <div id="homeArt" class="hero"></div>
+  <h2 class="center">เลือกการผจญภัย</h2>
+  <div class="row">
+    <button id="easy">อายุ 5–7 ปี · 20 ข้อ</button>
+    <button id="hard">อายุ 8–10 ปี · 36 ข้อ</button>
+  </div>
+  <p class="center">
+    กดคำตอบหมายเลข 1–4<br>
+    ตอบผิดไม่เป็นไร มีคำอธิบายแล้วลองใหม่ได้<br>
+    เล่นทีละนิด พักทุก 5 ข้อ
+  </p>
+  <p class="center note">
+    ภาพบางข้อเป็นคำใบ้เพื่อช่วยเรียนรู้<br>
+    เด็กเล็กควรมีผู้ใหญ่ช่วยอ่านหรือเล่นด้วย
+  </p>
+</section>
+
+<section id="game" class="panel" hidden>
+  <div class="topline">
+    <strong id="counter"></strong>
+    <strong id="stars"></strong>
+  </div>
+  <progress id="progress" max="20" value="0"
+    aria-label="ความคืบหน้า"></progress>
+
+  <div id="picture" class="hero"></div>
+  <h2 id="question" tabindex="-1"></h2>
+
+  <div class="row">
+    <button id="speak" class="secondary">อ่านคำถามและตัวเลือก</button>
+    <button id="stop" class="secondary">หยุดอ่าน</button>
+    <button id="back" class="secondary">หน้าหลัก</button>
+  </div>
+  <p id="voiceStatus" class="center note" role="status"></p>
+
+  <div id="answers" class="answers"></div>
+
+  <div id="feedback" class="feedback" role="status"
+    aria-live="polite" aria-atomic="true" hidden></div>
+
+  <div id="feedbackControls" class="row" hidden>
+    <button id="readFeedback" class="secondary">อ่านคำอธิบาย</button>
+  </div>
+
+  <div class="row">
+    <button id="next" hidden>ข้อต่อไป</button>
+  </div>
+</section>
+
+<section id="rest" class="panel center" hidden>
+  <div id="restArt" class="hero"></div>
+  <h2>พักสักนิด เก่งมากแล้ว!</h2>
+  <p id="restText"></p>
+  <p>มองไกล ๆ ขยับตัว แล้วกลับมาเล่นเมื่อพร้อมนะ</p>
+  <button id="continue">พร้อมแล้ว เล่นต่อ</button>
+</section>
+
+<section id="finish" class="panel center" hidden>
+  <div id="finishArt" class="hero"></div>
+  <h2>ผจญภัยสำเร็จแล้ว!</h2>
+  <p id="result"></p>
+  <p>ดาวได้จากการเรียนรู้จนตอบถูก ไม่หักดาวเมื่อลองใหม่</p>
+  <div class="row">
+    <button id="again">เล่นอีกครั้ง</button>
+    <button id="menu" class="secondary">เลือกระดับ</button>
+  </div>
+</section>
+
+<footer>
+  ภาพต้นฉบับไม่ดัดแปลง:
+  <a href="https://github.com/hfg-gmuend/openmoji"
+    target="_blank" rel="noopener">OpenMoji</a>
+  ·
+  <a href="https://creativecommons.org/licenses/by-sa/4.0/"
+    target="_blank" rel="noopener">CC BY-SA 4.0</a><br>
+  ไม่มีโฆษณา ไม่มีบัญชีผู้เล่น ไม่บันทึกข้อมูลเด็ก<br>
+  ภาพโหลดจากผู้ให้บริการภายนอก · เสียงภาษาไทยขึ้นอยู่กับอุปกรณ์
+</footer>
+</main>
+<div id="confetti" aria-hidden="true"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+/* ภาพเวกเตอร์ OpenMoji */
+const icons={
+  computer:["1F5A5","🖥️","จอคอมพิวเตอร์"],
+  mouse:["1F5B1","🖱️","เมาส์"],
+  keyboard:["2328","⌨️","คีย์บอร์ด"],
+  printer:["1F5A8","🖨️","เครื่องพิมพ์"],
+  headphones:["1F3A7","🎧","หูฟัง"],
+  robot:["1F916","🤖","หุ่นยนต์"],
+  folder:["1F4C1","📁","โฟลเดอร์"],
+  file:["1F4C4","📄","ไฟล์เอกสาร"],
+  lock:["1F512","🔒","แม่กุญแจ"],
+  globe:["1F310","🌐","อินเทอร์เน็ต"],
+  eyes:["1F440","👀","ดวงตา"],
+  trophy:["1F3C6","🏆","ถ้วยรางวัล"],
+  hand:["270B","✋","หยุด"],
+  water:["1F4A7","💧","หยดน้ำ"],
+  cup:["1F964","🥤","แก้วน้ำ"],
+  adult:["1F9D1","🧑","ผู้ใหญ่"],
+  paint:["1F3A8","🎨","จานสี"],
+  save:["1F4BE","💾","บันทึกงาน"],
+  trash:["1F5D1","🗑️","ถังขยะ"],
+  book:["1F4D6","📖","หนังสือ"],
+  speaker:["1F50A","🔊","ลำโพง"],
+  chair:["1FA91","🪑","เก้าอี้"],
+  smile:["1F60A","😊","ยิ้ม"],
+  message:["1F4AC","💬","ข้อความ"],
+  search:["1F50D","🔍","แว่นขยาย"],
+  key:["1F511","🔑","กุญแจ"],
+  phone:["1F4F1","📱","โทรศัพท์"],
+  plug:["1F50C","🔌","ปลั๊กไฟ"],
+  star:["2B50","⭐","ดาว"],
+  pencil:["270F","✏️","ดินสอ"],
+  house:["1F3E0","🏠","บ้าน"],
+  exit:["1F6AA","🚪","ประตู"],
+  check:["2705","✅","เครื่องหมายถูก"],
+  question:["2753","❓","คำถาม"]
+};
+
+function art(key,decorative=false){
+  const [code,emoji,name]=icons[key]||icons.robot;
+  const wrap=document.createElement("span");
+  wrap.className="artwrap";
+  if(decorative) wrap.setAttribute("aria-hidden","true");
+  const image=document.createElement("img");
+  image.className="art";
+  image.alt=decorative?"":name;
+  image.src=
+    "https://cdn.jsdelivr.net/npm/openmoji@15.1.0/color/svg/"
+    +code+".svg";
+  image.onerror=()=>{
+    const fallback=document.createElement("span");
+    fallback.className="fallback";
+    fallback.textContent=emoji;
+    if(!decorative){
+      fallback.setAttribute("role","img");
+      fallback.setAttribute("aria-label",name);
+    }
+    wrap.replaceChildren(fallback);
+  };
+  wrap.append(image);
+  return wrap;
+}
+
+function scene(target,key){
+  const left=document.createElement("span");
+  left.className="side";
+  left.append(art("star",true));
+  const right=document.createElement("span");
+  right.className="side";
+  right.append(art("robot",true));
+  $(target).replaceChildren(left,art(key),right);
+}
+
+/*
+ตัวเลือก: [ข้อความ, ภาพ, คำอธิบายว่าทำไมผิด]
+ตัวเลือกที่ถูกเก็บแยก ก่อนสุ่มสำหรับแสดงผล
+*/
+const O=(label,icon,reason="")=>({label,icon,reason});
+const Q=(text,pic,correct,wrong,why)=>({
+  text,pic,correct,options:[correct,...wrong],why
+});
+
+const devices=[
+  O("จอภาพ","computer","จอภาพใช้แสดงภาพและข้อความ ไม่ใช่อุปกรณ์สำหรับงานที่ถาม"),
+  O("เมาส์","mouse","เมาส์ใช้เลื่อนตัวชี้และคลิก ไม่ใช่อุปกรณ์สำหรับงานที่ถาม"),
+  O("คีย์บอร์ด","keyboard","คีย์บอร์ดใช้พิมพ์ตัวอักษรและตัวเลข ไม่ใช่อุปกรณ์สำหรับงานที่ถาม"),
+  O("เครื่องพิมพ์","printer","เครื่องพิมพ์ใช้พิมพ์งานลงกระดาษ ไม่ใช่อุปกรณ์สำหรับงานที่ถาม")
+];
+
+function deviceQ(text,index,why){
+  return Q(
+    text,"computer",devices[index],
+    devices.filter((_,i)=>i!==index),why
+  );
+}
+
+const basic=[
+  deviceQ(
+    "อุปกรณ์ไหนใช้ดูภาพและวิดีโอ?",0,
+    "จอภาพแสดงรูป ตัวหนังสือ และวิดีโอให้เราดู"
+  ),
+  deviceQ(
+    "อุปกรณ์ไหนใช้เลื่อนลูกศรบนหน้าจอ?",1,
+    "เมาส์ช่วยเลื่อนตัวชี้หรือลูกศร และคลิกเลือกสิ่งต่าง ๆ"
+  ),
+  deviceQ(
+    "อุปกรณ์ไหนใช้พิมพ์ตัวหนังสือ?",2,
+    "คีย์บอร์ดมีปุ่มตัวอักษรและตัวเลขให้เรากดพิมพ์"
+  ),
+  deviceQ(
+    "อุปกรณ์ไหนพิมพ์รูปลงบนกระดาษ?",3,
+    "เครื่องพิมพ์นำรูปหรือข้อความจากคอมพิวเตอร์มาพิมพ์ลงกระดาษ"
+  ),
+  Q(
+    "อยากฟังเสียงโดยไม่รบกวนคนอื่น ใช้อะไร?","headphones",
+    O("หูฟัง","headphones"),
+    [
+      O("เมาส์","mouse","เมาส์ใช้คลิกและเลื่อนตัวชี้ ไม่ได้ใช้ฟังเสียง"),
+      O("คีย์บอร์ด","keyboard","คีย์บอร์ดใช้พิมพ์ ไม่ได้ใช้ฟังเสียง"),
+      O("เครื่องพิมพ์","printer","เครื่องพิมพ์พิมพ์งานลงกระดาษ ไม่ได้ใช้ฟังเสียง")
+    ],
+    "หูฟังช่วยให้เราฟังเสียงโดยไม่เปิดลำโพงรบกวนคนอื่น ใช้เสียงเบา ๆ นะ"
+  ),
+  Q(
+    "ใช้คอมพิวเตอร์แล้วปวดตา ควรทำอย่างไร?","eyes",
+    O("พักและบอกผู้ใหญ่","adult"),
+    [
+      O("เล่นต่อไป","computer","เล่นต่อทั้งที่ปวดตาอาจทำให้ไม่สบายตามากขึ้น"),
+      O("เอาหน้าชิดจอ","eyes","เอาหน้าชิดจอไม่ได้ช่วยแก้ปวดตา"),
+      O("เพิ่มแสงจอจนสุด","speaker","เพิ่มความสว่างมาก ๆ อาจทำให้แสบตา ไม่ใช่วิธีแก้")
+    ],
+    "หยุดพัก มองไกล ๆ และบอกผู้ใหญ่ ถ้ายังปวดตาควรขอความช่วยเหลือ"
+  ),
+  Q(
+    "คลิกเมาส์หมายถึงอะไร?","mouse",
+    O("กดปุ่มเมาส์แล้วปล่อย","mouse"),
+    [
+      O("เขย่าจอ","computer","การเขย่าจอไม่ใช่การคลิก และอาจทำให้จอล้ม"),
+      O("ดึงสายไฟ","plug","การดึงสายไฟไม่ใช่การคลิก"),
+      O("เคาะคีย์บอร์ด","keyboard","คีย์บอร์ดกับเมาส์เป็นคนละอุปกรณ์")
+    ],
+    "คลิกคือกดปุ่มเมาส์แล้วปล่อยเบา ๆ เพื่อเลือกสิ่งบนหน้าจอ"
+  ),
+  Q(
+    "ควรวางเมาส์ไว้ที่ไหน?","mouse",
+    O("บนโต๊ะหรือแผ่นรองเมาส์","mouse"),
+    [
+      O("ในแก้วน้ำ","cup","น้ำอาจทำให้เมาส์เสียหาย"),
+      O("บนศีรษะ","adult","บนศีรษะไม่ใช่พื้นเรียบสำหรับใช้งานเมาส์"),
+      O("ใต้เท้า","chair","เท้าอาจเหยียบเมาส์เสียหาย")
+    ],
+    "ใช้เมาส์บนพื้นเรียบ เช่น โต๊ะหรือแผ่นรองเมาส์ จะเลื่อนได้สะดวก"
+  ),
+  Q(
+    "ควรกดคีย์บอร์ดอย่างไร?","keyboard",
+    O("กดเบา ๆ","hand"),
+    [
+      O("ทุบแรง ๆ","keyboard","ทุบแรง ๆ อาจทำให้ปุ่มเสีย"),
+      O("ใช้ของแข็งเคาะ","pencil","ของแข็งอาจทำให้คีย์บอร์ดเสียหาย"),
+      O("ใช้น้ำราด","water","น้ำอาจทำให้อุปกรณ์เสียหาย")
+    ],
+    "ใช้ปลายนิ้วกดเบา ๆ ก็พิมพ์ได้ ไม่ต้องออกแรงมาก"
+  ),
+  Q(
+    "ก่อนใช้คอมพิวเตอร์ มือควรเป็นอย่างไร?","hand",
+    O("สะอาดและแห้ง","hand"),
+    [
+      O("เปียกน้ำ","water","น้ำจากมืออาจเข้าไปในอุปกรณ์"),
+      O("เลอะอาหาร","cup","คราบอาหารทำให้อุปกรณ์สกปรก"),
+      O("มีทรายติด","house","เม็ดทรายอาจเข้าไปติดตามปุ่ม")
+    ],
+    "มือสะอาดและแห้งช่วยดูแลคีย์บอร์ดและเมาส์"
+  ),
+  Q(
+    "ควรวางแก้วน้ำไว้ตรงไหน?","cup",
+    O("ห่างจากคอมพิวเตอร์","cup"),
+    [
+      O("บนคีย์บอร์ด","keyboard","แก้วอาจล้มและน้ำหกใส่ปุ่ม"),
+      O("บนเมาส์","mouse","เมาส์ไม่ใช่ที่วางแก้ว และน้ำอาจหก"),
+      O("ชิดขอบเครื่อง","computer","น้ำยังอาจหกเข้าเครื่องได้")
+    ],
+    "วางแก้วน้ำแยกจากพื้นที่คอมพิวเตอร์ เพื่อลดโอกาสน้ำหกใส่อุปกรณ์"
+  ),
+  Q(
+    "คอมพิวเตอร์ไม่ทำงาน ควรทำอย่างไร?","computer",
+    O("ขอผู้ใหญ่ช่วย","adult"),
+    [
+      O("แกะเครื่องเอง","computer","เด็กไม่ควรแกะเครื่อง เพราะอาจไม่ปลอดภัยและทำให้เครื่องเสีย"),
+      O("เคาะเครื่องแรง ๆ","hand","การเคาะไม่ได้แก้ปัญหา และอาจทำให้อุปกรณ์เสีย"),
+      O("ดึงสายทุกเส้น","plug","ดึงสายโดยไม่รู้หน้าที่อาจทำให้เกิดปัญหาเพิ่ม")
+    ],
+    "บอกอาการที่พบ แล้วให้ผู้ใหญ่ช่วยตรวจสอบอย่างปลอดภัย"
+  ),
+  Q(
+    "ควรฟังเสียงด้วยหูฟังอย่างไร?","headphones",
+    O("เปิดเสียงเบา ๆ","headphones"),
+    [
+      O("เปิดดังที่สุด","speaker","เสียงดังมากอาจเป็นอันตรายต่อการได้ยิน"),
+      O("ฟังต่อแม้เจ็บหู","eyes","เจ็บหูเป็นสัญญาณให้หยุด ไม่ควรฝืนฟัง"),
+      O("เพิ่มเสียงตลอด","speaker","เสียงที่ดังขึ้นเรื่อย ๆ อาจทำให้หูไม่สบาย")
+    ],
+    "ฟังด้วยเสียงเบาและพัก ถ้าเจ็บหูให้หยุดและบอกผู้ใหญ่"
+  ),
+  Q(
+    "จะวาดรูปบนคอมพิวเตอร์ ควรเปิดอะไร?","paint",
+    O("โปรแกรมวาดรูป","paint"),
+    [
+      O("โปรแกรมฟังเพลง","headphones","โปรแกรมฟังเพลงมีหน้าที่หลักสำหรับฟัง ไม่ใช่วาดรูป"),
+      O("เครื่องพิมพ์อย่างเดียว","printer","เครื่องพิมพ์พิมพ์งาน แต่ไม่ได้เป็นโปรแกรมวาดรูป"),
+      O("โฟลเดอร์เปล่า","folder","โฟลเดอร์เก็บไฟล์ ไม่ใช่เครื่องมือวาด")
+    ],
+    "โปรแกรมวาดรูปมีเครื่องมือ เช่น ดินสอ พู่กัน และสี ให้เราสร้างรูป"
+  ),
+  deviceQ(
+    "ถ้าอยากพิมพ์ชื่อของเรา ใช้อะไร?",2,
+    "ใช้ปุ่มตัวอักษรบนคีย์บอร์ดพิมพ์ชื่อในโปรแกรมที่เปิดอยู่"
+  ),
+  deviceQ(
+    "อยากได้รูปจากคอมพิวเตอร์เป็นกระดาษ ใช้อะไร?",3,
+    "เครื่องพิมพ์ช่วยนำรูปจากไฟล์มาพิมพ์เป็นภาพบนกระดาษ"
+  ),
+  Q(
+    "เจอภาพบนจอที่ทำให้กลัว ควรทำอย่างไร?","computer",
+    O("หยุดดูและบอกผู้ใหญ่","adult"),
+    [
+      O("ดูต่อคนเดียว","eyes","ไม่จำเป็นต้องฝืนดูสิ่งที่ทำให้ไม่สบายใจ"),
+      O("ไม่บอกใคร","lock","เก็บไว้คนเดียวทำให้ผู้ใหญ่ไม่รู้ว่าควรช่วยอย่างไร"),
+      O("ส่งต่อให้เพื่อน","message","ส่งต่ออาจทำให้เพื่อนกลัวด้วย")
+    ],
+    "หยุดดู แล้วบอกผู้ใหญ่ที่ไว้ใจ ผู้ใหญ่จะช่วยดูแลและจัดการให้"
+  ),
+  Q(
+    "ใช้คอมพิวเตอร์กับเพื่อน ควรทำอย่างไร?","smile",
+    O("ผลัดกันใช้งาน","smile"),
+    [
+      O("ใช้คนเดียวตลอด","computer","เพื่อนจะไม่ได้มีโอกาสเรียนรู้"),
+      O("แย่งเมาส์","mouse","แย่งเมาส์ทำให้เล่นร่วมกันไม่สนุก"),
+      O("กดรบกวนเพื่อน","keyboard","กดรบกวนอาจทำให้งานของเพื่อนเปลี่ยนหรือหาย")
+    ],
+    "ตกลงผลัดกันใช้ และช่วยกันอ่านหรือคิดคำตอบ"
+  ),
+  Q(
+    "ก่อนใช้คอมพิวเตอร์ของคนอื่น ควรทำอะไร?","computer",
+    O("ขออนุญาตก่อน","adult"),
+    [
+      O("เปิดใช้ทันที","computer","เจ้าของอาจยังไม่อนุญาตหรือมีงานเปิดอยู่"),
+      O("ลบไฟล์เล่น","trash","ไฟล์อาจเป็นงานสำคัญของเจ้าของ"),
+      O("เปลี่ยนการตั้งค่า","keyboard","เปลี่ยนโดยไม่ขออนุญาตอาจรบกวนการใช้งาน")
+    ],
+    "ขออนุญาตเจ้าของหรือผู้ดูแล แล้วใช้ตามที่เขาอนุญาต"
+  ),
+  Q(
+    "นั่งใช้คอมพิวเตอร์แบบไหนดี?","chair",
+    O("นั่งสบาย ไม่เอาหน้าชิดจอ","chair"),
+    [
+      O("เอาหน้าติดจอ","eyes","ชิดจอเกินไปอาจทำให้เมื่อยและไม่สบายตา"),
+      O("บิดตัวตลอด","chair","ท่าบิดตัวอาจทำให้ปวดเมื่อย"),
+      O("นอนทับคีย์บอร์ด","keyboard","อาจกดปุ่มโดยไม่ตั้งใจและทำให้อุปกรณ์เสีย")
+    ],
+    "นั่งในท่าที่สบาย จัดจอให้มองง่าย และพักเปลี่ยนท่าบ้าง"
+  )
+];
+
+const advanced=[
+  Q(
+    "โฟลเดอร์ช่วยทำอะไร?","folder",
+    O("จัดเก็บไฟล์เป็นหมวดหมู่","folder"),
+    [
+      O("ทำให้จอใหญ่ขึ้น","computer","ขนาดจอไม่ได้เปลี่ยนจากการสร้างโฟลเดอร์"),
+      O("เพิ่มเสียงเพลง","speaker","ความดังปรับด้วยตัวควบคุมเสียง ไม่ใช่โฟลเดอร์"),
+      O("พิมพ์กระดาษ","printer","การพิมพ์กระดาษใช้เครื่องพิมพ์")
+    ],
+    "โฟลเดอร์เหมือนกล่อง ช่วยจัดไฟล์ให้เป็นกลุ่มและหาได้ง่าย"
+  ),
+  Q(
+    "ปุ่ม Space bar ใช้ทำอะไรตอนพิมพ์?","keyboard",
+    O("เว้นวรรค","keyboard"),
+    [
+      O("ปิดจอ","computer","Space bar ไม่ใช่ปุ่มปิดจอ"),
+      O("เพิ่มเสียง","speaker","โดยทั่วไป Space bar ไม่ใช่ปุ่มเพิ่มเสียง"),
+      O("พิมพ์กระดาษ","printer","Space bar ไม่ใช่คำสั่งพิมพ์งาน")
+    ],
+    "Space bar คือปุ่มยาวบนคีย์บอร์ด ใช้พิมพ์ช่องว่างในข้อความ"
+  ),
+  Q(
+    "ก่อนปิดงานวาดรูป ควรทำอะไร?","paint",
+    O("บันทึกงาน","save"),
+    [
+      O("ดึงปลั๊กทันที","plug","งานที่ยังไม่บันทึกอาจหาย และไม่ใช่วิธีปิดเครื่องที่เหมาะสม"),
+      O("ลบรูปทั้งหมด","trash","ลบรูปจะทำให้งานที่ทำไว้หาย"),
+      O("ปิดโดยไม่บันทึก","exit","งานที่ยังไม่บันทึกอาจเปิดกลับมาไม่ได้")
+    ],
+    "บันทึกงานและตรวจสอบว่าเก็บไว้แล้ว ก่อนปิดโปรแกรม"
+  ),
+  Q(
+    "ควรดูแลรหัสผ่านอย่างไร?","lock",
+    O("เก็บเป็นความลับ ให้ผู้ปกครองช่วยดูแล","adult"),
+    [
+      O("บอกทุกคนในเกม","globe","คนอื่นอาจนำรหัสไปใช้เข้าบัญชีของเรา"),
+      O("ส่งให้คนแปลกหน้า","message","คนไม่รู้จักไม่ควรได้รหัสผ่านของเรา"),
+      O("โพสต์ให้ทุกคนเห็น","phone","การโพสต์ทำให้ใครก็รู้รหัสได้")
+    ],
+    "ไม่เปิดเผยรหัสให้เพื่อนหรือคนแปลกหน้า ให้ผู้ปกครองที่ไว้ใจช่วยดูแลบัญชี"
+  ),
+  Q(
+    "คนไม่รู้จักในเกมขอที่อยู่บ้าน ควรทำอย่างไร?","house",
+    O("ไม่ส่ง และบอกผู้ปกครอง","adult"),
+    [
+      O("ส่งให้ทันที","message","ที่อยู่เป็นข้อมูลส่วนตัว ไม่ควรส่งให้คนไม่รู้จัก"),
+      O("ส่งรูปบ้านแทน","house","รูปบ้านอาจช่วยให้คนอื่นรู้ว่าเราอยู่ที่ไหน"),
+      O("ชวนมาที่บ้าน","house","ไม่ควรนัดหรือชวนคนไม่รู้จักโดยไม่มีผู้ปกครองดูแล")
+    ],
+    "ไม่ส่งข้อมูลส่วนตัว และให้ผู้ปกครองช่วยตรวจสอบข้อความนั้น"
+  ),
+  Q(
+    "เจอปุ่มของฟรีที่ให้ดาวน์โหลด ควรทำอย่างไร?","globe",
+    O("ให้ผู้ใหญ่ตรวจสอบก่อน","search"),
+    [
+      O("กดทันที","mouse","ยังไม่รู้ว่าไฟล์ปลอดภัยหรือไม่"),
+      O("กรอกรหัสผ่านก่อน","key","ข้อเสนอของฟรีไม่ใช่เหตุผลให้เปิดเผยรหัสผ่าน"),
+      O("ดาวน์โหลดทุกไฟล์","folder","ไฟล์ที่ไม่รู้จักอาจไม่ปลอดภัย")
+    ],
+    "อย่ารีบคลิก ให้ผู้ใหญ่ที่ไว้ใจตรวจสอบก่อนดาวน์โหลด"
+  ),
+  Q(
+    "ตอนเขียนข้อความ ปุ่ม Enter มักใช้ทำอะไร?","keyboard",
+    O("ขึ้นบรรทัดใหม่","file"),
+    [
+      O("เพิ่มเสียง","speaker","Enter ไม่ใช่ปุ่มเพิ่มเสียง"),
+      O("ทำความสะอาดจอ","computer","ปุ่มคีย์บอร์ดทำความสะอาดจอไม่ได้"),
+      O("พิมพ์ลงกระดาษ","printer","Enter ไม่ใช่คำสั่งพิมพ์งานทั่วไป")
+    ],
+    "ในโปรแกรมเขียนข้อความ Enter มักขึ้นบรรทัดใหม่ แต่ในบางโปรแกรมอาจใช้ยืนยันหรือส่งข้อความ"
+  ),
+  Q(
+    "ตอนพิมพ์ ปุ่ม Backspace มักลบตรงไหน?","keyboard",
+    O("ตัวอักษรก่อนตำแหน่งเคอร์เซอร์","file"),
+    [
+      O("ทุกตัวในไฟล์","trash","กด Backspace ตามปกติไม่ได้ลบทั้งไฟล์"),
+      O("รูปบนกระดาษ","printer","ปุ่มคอมพิวเตอร์แก้กระดาษที่พิมพ์แล้วไม่ได้"),
+      O("ข้อความในทุกโปรแกรม","computer","คำสั่งทำงานในช่องหรือโปรแกรมที่กำลังใช้อยู่")
+    ],
+    "หากไม่ได้เลือกข้อความไว้ Backspace มักลบตัวอักษรก่อนเคอร์เซอร์ทีละตัว"
+  ),
+  Q(
+    "เคอร์เซอร์ข้อความบอกอะไร?","keyboard",
+    O("ตำแหน่งที่จะพิมพ์","file"),
+    [
+      O("ความดังเสียง","speaker","ความดังแสดงด้วยตัวควบคุมเสียง"),
+      O("จำนวนกระดาษ","printer","เคอร์เซอร์ไม่ได้บอกจำนวนกระดาษ"),
+      O("อุณหภูมิห้อง","house","เคอร์เซอร์ไม่ได้วัดอุณหภูมิ")
+    ],
+    "เคอร์เซอร์ข้อความมักเป็นเส้นกระพริบ บอกว่าข้อความจะปรากฏตรงไหน"
+  ),
+  Q(
+    "ไฟล์คืออะไร?","file",
+    O("ข้อมูลที่บันทึกไว้ เช่น รูปหรือข้อความ","file"),
+    [
+      O("สายไฟทุกเส้น","plug","สายไฟเป็นอุปกรณ์ ไม่ใช่ไฟล์ข้อมูล"),
+      O("ปุ่มบนเมาส์","mouse","ปุ่มเมาส์เป็นส่วนของอุปกรณ์"),
+      O("โต๊ะวางเครื่อง","chair","โต๊ะเป็นเฟอร์นิเจอร์ ไม่ใช่ข้อมูล")
+    ],
+    "ไฟล์เป็นข้อมูลที่เก็บไว้ อาจเป็นรูป ข้อความ เสียง หรือวิดีโอ"
+  ),
+  Q(
+    "ตั้งชื่อไฟล์แบบไหนหาได้ง่าย?","folder",
+    O("ชื่อที่บอกว่าเป็นงานอะไร","file"),
+    [
+      O("ชื่อมั่วทุกครั้ง","question","ชื่อที่ไม่สื่อความหมายทำให้จำงานได้ยาก"),
+      O("ชื่อคล้ายกันทุกงาน","folder","ชื่อคล้ายกันมากอาจทำให้หยิบไฟล์ผิด"),
+      O("ไม่ตรวจชื่อเลย","eyes","อาจจำไม่ได้ว่าไฟล์ไหนเป็นงานที่ต้องการ")
+    ],
+    "ชื่ออย่าง งานวาดแมว ช่วยบอกว่าไฟล์นั้นเกี่ยวกับอะไร"
+  ),
+  Q(
+    "โปรแกรมเบราว์เซอร์ใช้ทำอะไร?","globe",
+    O("เปิดดูเว็บไซต์","globe"),
+    [
+      O("เช็ดหน้าจอ","computer","โปรแกรมเช็ดฝุ่นบนจอไม่ได้"),
+      O("ชาร์จเมาส์","mouse","การชาร์จต้องใช้อุปกรณ์ที่รองรับ ไม่ใช่เบราว์เซอร์"),
+      O("ใส่กระดาษ","printer","ใส่กระดาษเป็นการใช้งานเครื่องพิมพ์")
+    ],
+    "เบราว์เซอร์เป็นโปรแกรมสำหรับเปิดเว็บไซต์และใช้งานข้อมูลบนเว็บ"
+  ),
+  Q(
+    "ข้อมูลบนอินเทอร์เน็ตเชื่อได้ทุกอย่างไหม?","search",
+    O("ไม่ได้ ต้องตรวจสอบแหล่งข้อมูล","search"),
+    [
+      O("ได้ทุกอย่าง","check","ใครก็เผยแพร่ข้อมูลได้ จึงอาจมีข้อมูลผิด"),
+      O("จริงเสมอถ้ามีรูป","paint","รูปอาจถูกแก้ไขหรือใช้ไม่ตรงเรื่อง"),
+      O("จริงเสมอถ้าคนแชร์มาก","message","จำนวนคนแชร์ไม่ได้ยืนยันว่าข้อมูลจริง")
+    ],
+    "ตรวจสอบว่าใครเผยแพร่ และเปรียบเทียบกับแหล่งที่น่าเชื่อถือ ให้ผู้ใหญ่ช่วยได้"
+  ),
+  Q(
+    "ก่อนใช้รูปของคนอื่นในงาน ควรทำอะไร?","paint",
+    O("ตรวจสิทธิ์และให้เครดิตตามเงื่อนไข","book"),
+    [
+      O("บอกว่าเราวาดเอง","pencil","ทำให้คนอื่นเข้าใจผิดว่าเราเป็นเจ้าของผลงาน"),
+      O("ลบชื่อเจ้าของ","trash","ลบชื่อไม่ได้ทำให้เราได้สิทธิ์ใช้รูป"),
+      O("ใช้ได้ทุกภาพเสมอ","globe","ภาพแต่ละภาพมีเงื่อนไขการใช้งานต่างกัน")
+    ],
+    "ตรวจเงื่อนไขของภาพ ขออนุญาตเมื่อจำเป็น และให้เครดิตตามที่กำหนด"
+  ),
+  Q(
+    "ใช้บัญชีบนเครื่องส่วนรวมเสร็จแล้ว ควรทำอะไร?","lock",
+    O("ออกจากระบบ","exit"),
+    [
+      O("เปิดบัญชีทิ้งไว้","computer","คนถัดไปอาจใช้งานบัญชีเราได้"),
+      O("บอกรหัสคนถัดไป","key","คนถัดไปไม่ควรรู้รหัสผ่านของเรา"),
+      O("ให้เครื่องจำรหัสไว้","save","บนเครื่องส่วนรวม การจำรหัสอาจทำให้ผู้อื่นเข้าบัญชีได้")
+    ],
+    "ออกจากระบบ และหลีกเลี่ยงการบันทึกรหัสผ่านบนเครื่องส่วนรวม"
+  ),
+  Q(
+    "มีคนส่งข้อความทำให้ไม่สบายใจ ควรทำอย่างไร?","message",
+    O("ไม่ตอบโต้ และขอผู้ใหญ่ช่วย","adult"),
+    [
+      O("ส่งข้อความใจร้ายกลับ","message","ตอบโต้แบบเดียวกันอาจทำให้ปัญหาเพิ่ม"),
+      O("ส่งข้อมูลส่วนตัวให้เขา","house","ข้อมูลส่วนตัวไม่ได้ช่วยแก้ปัญหา และอาจทำให้ไม่ปลอดภัย"),
+      O("ทำตามทุกอย่างที่เขาบอก","hand","เราไม่จำเป็นต้องทำตามคำขอที่ทำให้ไม่สบายใจ")
+    ],
+    "หยุดคุยและบอกผู้ใหญ่ที่ไว้ใจ ให้ผู้ใหญ่ช่วยดูแลหรือรายงานข้อความ"
+  )
+];
+
+/* สถานะเกม */
+let deck=[],position=0,stars=0,firstTry=0;
+let attempted=false,solved=false,level="easy";
+let shownOptions=[],feedbackSpeech="";
+let voiceSession=0,voiceTimer=null,currentUtterance=null;
+let audioContext=null;
+
+function shuffle(items){
+  const result=[...items];
+  for(let i=result.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [result[i],result[j]]=[result[j],result[i]];
+  }
+  return result;
+}
+
+/* เสียงพูด: อ่านตามลำดับเดียวกับหน้าจอ */
+function stopVoice(){
+  voiceSession++;
+  clearTimeout(voiceTimer);
+  voiceTimer=null;
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  currentUtterance=null;
+  $("voiceStatus").textContent="";
+}
+
+function speakParts(parts){
+  stopVoice();
+  if(!("speechSynthesis" in window)){
+    $("voiceStatus").textContent=
+      "เครื่องนี้ไม่รองรับเสียงอ่าน ให้ผู้ใหญ่ช่วยอ่านได้";
+    return;
+  }
+
+  const session=voiceSession;
+  let index=0;
+
+  function nextPart(){
+    if(session!==voiceSession) return;
+    if(index>=parts.length){
+      $("voiceStatus").textContent="";
+      currentUtterance=null;
+      return;
+    }
+
+    const voices=speechSynthesis.getVoices();
+    const thaiVoice=voices.find(v=>/^th([-_]|$)/i.test(v.lang));
+
+    const message=new SpeechSynthesisUtterance(parts[index]);
+    currentUtterance=message;
+    message.lang="th-TH";
+    message.rate=Number($("rate").value);
+    message.pitch=1;
+    message.volume=1;
+    if(thaiVoice) message.voice=thaiVoice;
+
+    $("voiceStatus").textContent=thaiVoice
+      ? "กำลังอ่านช้า ๆ ตามลำดับบนหน้าจอ"
+      : "กำลังอ่าน · หากเสียงไม่เป็นภาษาไทย ให้ติดตั้งเสียงไทยในอุปกรณ์";
+
+    message.onend=()=>{
+      if(session!==voiceSession) return;
+      index++;
+      voiceTimer=setTimeout(nextPart,1100);
+    };
+
+    message.onerror=event=>{
+      if(session!==voiceSession) return;
+      if(event.error==="canceled"||event.error==="interrupted") return;
+      $("voiceStatus").textContent=
+        "อ่านเสียงไม่ได้ กรุณาตรวจสอบเสียงภาษาไทยของอุปกรณ์";
+      currentUtterance=null;
+    };
+
+    speechSynthesis.speak(message);
+  }
+
+  nextPart();
+}
+
+function readQuestion(){
+  const numbers=["หนึ่ง","สอง","สาม","สี่"];
+  const parts=[
+    `คำถามข้อที่ ${position+1}`,
+    deck[position].text,
+    "เลือกคำตอบที่ถูกต้องหนึ่งข้อ"
+  ];
+  shownOptions.forEach((option,index)=>{
+    parts.push(`ตัวเลือกที่ ${numbers[index]}`);
+    parts.push(option.label);
+  });
+  speakParts(parts);
+}
+
+/* เสียงเอฟเฟกต์ ไม่มีไฟล์เสียงภายนอก */
+function effect(success){
+  if(!$("sound").checked) return;
+  try{
+    const Audio=window.AudioContext||window.webkitAudioContext;
+    if(!Audio) return;
+    audioContext=audioContext||new Audio();
+    if(audioContext.state==="suspended") audioContext.resume();
+
+    const tones=success?[523,659,784]:[392,330];
+    const start=audioContext.currentTime;
+    tones.forEach((frequency,index)=>{
+      const osc=audioContext.createOscillator();
+      const gain=audioContext.createGain();
+      const time=start+index*.14;
+      osc.type="sine";
+      osc.frequency.value=frequency;
+      gain.gain.setValueAtTime(0,time);
+      gain.gain.linearRampToValueAtTime(.045,time+.02);
+      gain.gain.exponentialRampToValueAtTime(.001,time+.13);
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.start(time);
+      osc.stop(time+.14);
+    });
+  }catch(_){
+    // เกมยังเล่นได้หากอุปกรณ์ไม่รองรับเอฟเฟกต์เสียง
+  }
+}
+
+/* เอฟเฟกต์ดาว และเคารพการตั้งค่าลดการเคลื่อนไหว */
+function celebrate(big=false){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const container=$("confetti");
+  for(let i=0;i<(big?35:16);i++){
+    const particle=document.createElement("span");
+    particle.className="particle";
+    particle.textContent=i%2?"⭐":"✨";
+    particle.style.left=Math.random()*100+"%";
+    particle.style.top=Math.random()*20+"%";
+    particle.style.animationDelay=Math.random()*.25+"s";
+    container.append(particle);
+    setTimeout(()=>particle.remove(),1900);
+  }
+}
+
+/* หน้าจอ */
+function screen(id){
+  stopVoice();
+  ["home","game","rest","finish"].forEach(name=>{
+    $(name).hidden=name!==id;
+  });
+}
+
+function start(selected){
+  level=selected;
+  deck=shuffle(selected==="easy"?basic:[...basic,...advanced]);
+  position=0;
+  stars=0;
+  firstTry=0;
+  screen("game");
+  render();
+}
+
+function render(){
+  stopVoice();
+  attempted=false;
+  solved=false;
+  feedbackSpeech="";
+  const question=deck[position];
+
+  // สุ่มครั้งเดียว ใช้ชุดนี้ทั้งแสดงภาพและอ่านเสียง
+  shownOptions=shuffle(question.options);
+
+  $("counter").textContent=`ข้อ ${position+1} / ${deck.length}`;
+  $("stars").textContent=`⭐ เรียนรู้แล้ว ${stars} ข้อ`;
+  $("progress").max=deck.length;
+  $("progress").value=position;
+  $("question").textContent=question.text;
+  scene("picture",question.pic);
+
+  $("feedback").hidden=true;
+  $("feedback").replaceChildren();
+  $("feedbackControls").hidden=true;
+  $("next").hidden=true;
+  $("answers").replaceChildren();
+
+  shownOptions.forEach((option,index)=>{
+    const button=document.createElement("button");
+    button.className="choice";
+    button.dataset.answerLabel=option.label;
+    button.setAttribute(
+      "aria-label",`ตัวเลือกที่ ${index+1} ${option.label}`
+    );
+
+    const number=document.createElement("span");
+    number.className="number";
+    number.textContent=index+1;
+    number.setAttribute("aria-hidden","true");
+
+    const label=document.createElement("span");
+    label.textContent=option.label;
+
+    button.append(number,art(option.icon,true),label);
+    button.onclick=()=>answer(button,option);
+    $("answers").append(button);
+  });
+
+  $("question").focus();
+  if($("autoRead").checked) readQuestion();
+}
+
+function addFeedbackLine(title,text){
+  const p=document.createElement("p");
+  const strong=document.createElement("strong");
+  strong.textContent=title+" ";
+  p.append(strong,document.createTextNode(text));
+  $("feedback").append(p);
+}
+
+function answer(button,option){
+  if(solved) return;
+  stopVoice();
+
+  const question=deck[position];
+  const correct=option===question.correct;
+  $("feedback").replaceChildren();
+  $("feedback").hidden=false;
+  $("feedbackControls").hidden=false;
+
+  const heading=document.createElement("h3");
+
+  if(correct){
+    solved=true;
+    stars++;
+    if(!attempted) firstTry++;
+
+    $("feedback").className="feedback good";
+    heading.textContent="ถูกต้อง! เก่งมาก";
+    $("feedback").append(heading);
+    addFeedbackLine("คำตอบ:",question.correct.label);
+    addFeedbackLine("เพราะว่า:",question.why);
+
+    $("answers").querySelectorAll("button").forEach(b=>{
+      b.disabled=true;
+      b.classList.remove("wrong");
+    });
+    button.classList.add("correct");
+    button.classList.add("bounce");
+
+    $("stars").textContent=`⭐ เรียนรู้แล้ว ${stars} ข้อ`;
+    $("progress").value=position+1;
+    $("next").textContent=position===deck.length-1
+      ? "ดูรางวัล"
+      : ((position+1)%5===0?"พักสักนิด":"ข้อต่อไป");
+    $("next").hidden=false;
+
+    feedbackSpeech=
+      `ถูกต้อง เก่งมาก. คำตอบคือ ${question.correct.label}. ${question.why}`;
+
+    effect(true);
+    celebrate();
+    $("next").focus();
+  }else{
+    attempted=true;
+    $("feedback").className="feedback try";
+    heading.textContent="ยังไม่ถูกนะ มาดูเหตุผลกัน";
+    $("feedback").append(heading);
+
+    addFeedbackLine("หนูเลือก:",option.label);
+    addFeedbackLine("ที่ยังไม่ถูกเพราะ:",option.reason);
+    addFeedbackLine("คำตอบที่ถูก:",question.correct.label);
+    addFeedbackLine("คำอธิบาย:",question.why);
+    addFeedbackLine("ลองอีกครั้ง:", "กดคำตอบที่ถูกเพื่อไปต่อได้เลย");
+
+    button.classList.add("wrong");
+
+    feedbackSpeech=
+      `ยังไม่ถูกนะ. หนูเลือก ${option.label}. `
+      +`คำตอบนี้ยังไม่ถูกเพราะ ${option.reason}. `
+      +`คำตอบที่ถูกคือ ${question.correct.label}. `
+      +`${question.why}. ลองกดคำตอบที่ถูกอีกครั้งนะ`;
+
+    effect(false);
+  }
+
+  if($("autoRead").checked){
+    // แยกประโยคอ่าน เพื่อมีจังหวะพัก
+    speakParts(feedbackSpeech.split(". ").filter(Boolean));
+  }
+}
+
+$("next").onclick=()=>{
+  if(!solved) return;
+  position++;
+
+  if(position>=deck.length){
+    screen("finish");
+    $("result").textContent=
+      `สะสมดาวครบ ${stars} ดวง จาก ${deck.length} ข้อ `
+      +`· ตอบถูกครั้งแรก ${firstTry} ข้อ`;
+    celebrate(true);
+    $("again").focus();
+    return;
+  }
+
+  if(position%5===0){
+    screen("rest");
+    $("restText").textContent=
+      `เรียนรู้แล้ว ${position} ข้อ เหลืออีก ${deck.length-position} ข้อ`;
+    $("continue").focus();
+    return;
+  }
+
+  render();
+};
+
+$("continue").onclick=()=>{
+  screen("game");
+  render();
+};
+
+$("speak").onclick=readQuestion;
+$("stop").onclick=stopVoice;
+$("readFeedback").onclick=()=>{
+  speakParts(feedbackSpeech.split(". ").filter(Boolean));
+};
+$("rate").onchange=()=>{
+  // หยุดเสียงเดิมก่อน ผู้เล่นกดอ่านใหม่ด้วยความเร็วที่เลือก
+  stopVoice();
+};
+$("autoRead").onchange=()=>{
+  if(!$("autoRead").checked) stopVoice();
+};
+
+$("easy").onclick=()=>start("easy");
+$("hard").onclick=()=>start("hard");
+$("again").onclick=()=>start(level);
+
+function goHome(){
+  screen("home");
+  $("easy").focus();
+}
+$("back").onclick=goHome;
+$("menu").onclick=goHome;
+
+/* ปุ่มลัดคอมพิวเตอร์ 1–4 */
+document.addEventListener("keydown",event=>{
+  if(event.repeat||$("game").hidden||solved) return;
+  const target=event.target;
+  if(target instanceof HTMLElement &&
+    target.matches("input,select,textarea,[contenteditable]")) return;
+
+  const number=Number(event.key);
+  if(number>=1&&number<=4&&/^[1-4]$/.test(event.key)){
+    event.preventDefault();
+    const button=$("answers").querySelectorAll("button")[number-1];
+    if(button&&!button.disabled) button.click();
+  }
+});
+
+/* หยุดเสียงเมื่อออกจากแท็บ */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) stopVoice();
+});
+
+scene("homeArt","computer");
+scene("restArt","eyes");
+scene("finishArt","trophy");
+</script>
+</body>
+</html>
